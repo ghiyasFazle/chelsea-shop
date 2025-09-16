@@ -28,7 +28,13 @@ SECRET_KEY = 'django-insecure-gma53u+*=ty5e@pjvvpigd!rq%z-@f6g79s@@g@0(*q88b#td=
 PRODUCTION = os.getenv('PRODUCTION','False').lower() == 'true'
 DEBUG = True
 
-ALLOWED_HOSTS = ["local host","127.0.0.1","ghiyas-fazle-chelseashop.pbp.cs.ui.ac.id"]
+ALLOWED_HOSTS = ["localhost","127.0.0.1","ghiyas-fazle-chelseashop.pbp.cs.ui.ac.id"]
+
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://ghiyas-fazle-chelseashop.pbp.cs.ui.ac.id/"
+]
+
 
 
 # Application definition
@@ -40,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'main',
 ]
 
@@ -58,7 +65,7 @@ ROOT_URLCONF = 'ChelseaShop.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'], 
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -67,6 +74,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
             ],
         },
+        
     },
 ]
 
