@@ -11,7 +11,7 @@ import datetime
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 
-# Create your views here.
+# pass pws : ekqM5XlR7RbiVjz9_s7JXrQtG_Golr-Q
 @login_required(login_url='/login')
 def show_main(request):
     product_list = product.objects.all()

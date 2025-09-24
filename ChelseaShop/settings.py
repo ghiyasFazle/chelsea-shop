@@ -32,7 +32,7 @@ ALLOWED_HOSTS = ["localhost","127.0.0.1","ghiyas-fazle-chelseashop.pbp.cs.ui.ac.
 
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://ghiyas-fazle-chelseashop.pbp.cs.ui.ac.id/"
+    "https://ghiyas-fazle-chelseashop.pbp.cs.ui.ac.id"
 ]
 
 
