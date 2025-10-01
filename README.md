@@ -99,3 +99,54 @@ jawaban:
 -melakukan restriksi dengan menambahkan @login_required(login_url='/login') di atas show main dan show product
 -memodifikasi fungsi login dan logout agar mengintegrasikan cookies
 -menambahkan last login di show main
+
+##### TUGAS 5 ####
+
+1. 
+Prioritas CSS ditentukan berdasarkan spesifisitas. Urutannya dari yang paling rendah ke yang paling tinggi adalah:
+-Selector elemen atau tag, misalnya div atau p
+-Selector class atau atribut, misalnya .card atau [type=text]
+-Selector id, misalnya #header
+-Selector inline style yang ditulis langsung pada elemen HTML, misalnya style="color:red"
+
+2. 
+Responsive design penting agar tampilan web tetap nyaman dilihat dan digunakan di berbagai ukuran layar, baik di desktop, tablet, maupun smartphone. Tanpa responsive design, tampilan web bisa pecah atau susah diakses di perangkat tertentu.
+Contoh aplikasi yang sudah responsive adalah Tokopedia, Instagram web, atau Google. Semua elemen menyesuaikan ukuran layar.
+Contoh aplikasi yang belum responsive misalnya beberapa website lama universitas atau portal berita lama. Saat dibuka di smartphone, tombol dan teks menjadi terlalu kecil atau layout pecah karena desainnya hanya untuk desktop
+
+3. 
+Margin adalah jarak antara elemen dengan elemen lain di luar elemen tersebut.
+Sedangkan border adalah garis di tepi elemen yang membatasi area konten dan padding.
+Lalu, padding adalah jarak antara konten di dalam elemen dengan border.
+contoh mengimplementasikan ketiganya:
+
+<head>
+  <title>Contoh Margin, Border, dan Padding</title>
+  <style>
+    .box {
+      width: 200px;          /* Lebar box */
+      height: 100px;         /* Tinggi box */
+      background-color: lightblue;  /* Warna latar */
+      
+      /* Padding: jarak antara konten dengan border */
+      padding: 20px;
+      
+      /* Border: garis tepi box */
+      border: 5px solid blue;
+      
+      /* Margin: jarak box dengan elemen lain */
+      margin: 30px;
+    
+
+
+4. 
+Flex box adalah sistem layout satu dimensi, bisa horizontal atau vertical. Kegunaannya untuk menyusun elemen agar fleksibel, mudah diatur jarak, posisi, dan ukuran relatif terhadap elemen lain. Contoh property: display flex, justify content, align items
+
+Grid layout adalah sistem layout dua dimensi, bisa baris dan kolom. Kegunaannya untuk membuat tata letak yang kompleks dengan baris dan kolom tetap, misalnya layout halaman dashboard atau galeri gambar. Contoh property: display grid, grid template columns, grid gap
+
+5. 
+-Buat fungsi untuk menghapus product dengan mengambil id product dan menghapus dari database 
+-Buat fungsi untuk mengedit product dengan menampilkan form berisi data product yang sudah ada, lalu simpan perubahan
+-Buka template HTML yang sudah ada, kustomisasi menggunakan CSS Tailwind untuk halaman login, register, tambah product, edit product, dan detail product, tambahkan style yang menarik misalnya warna, shadow, padding, radius pada input dan button
+-buat pengecekan untuk halaman filter daftar product, cek apakah ada product. Jika tidak ada, tampilkan gambar dan pesan "belum ada product".Jika ada, buat card untuk setiap product dengan informasi product, lalu buat dua button untuk edit dan hapus
+-Buat navigation bar di bagian atas halaman, pastikan responsive dengan menambahkan kelas untuk mobile dan desktop jika pakai CSS framework

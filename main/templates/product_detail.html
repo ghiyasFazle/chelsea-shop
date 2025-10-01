@@ -1,26 +1,34 @@
 {% extends 'base.html' %}
 {% load humanize %}
+
 {% block content %}
-<p><a href="{% url 'main:show_main' %}"><button>← Back to product List</button></a></p>
+<div class="auth-container">
+  <div class="product-card">
+    <a href="{% url 'main:show_main' %}" class="btn btn-light" style="margin-bottom: 1rem;">← Back to Product List</a>
 
+    <div class="product-header">
+      <h3>{{ product.name }}</h3>
+      {% if product.is_sale %}
+        <span class="product-badge sale-badge" style="background:#1e40af; color:#ffffff;">On Sale</span>
+      {% endif %}
+    </div>
 
-<h1>{{ product.name }}</h1>
-<p>
-    <b>Category:</b> {{ product.get_category_display }}
-    {% if product.is_sale %}| <b>On Sale</b>{% endif %}
-</p>
-<p>
-    <b>Price:</b> Rp {{ product.price|intcomma }}<br>
-    <b>Stock:</b> {{ product.stock }}<br>
-</p>
+    {% if product.thumbnail %}
+      <img src="{{ product.thumbnail }}" alt="product image" class="product-image">
+    {% endif %}
 
+    <div class="product-info">
+      <p><b>Category:</b> {{ product.get_category_display }}</p>
+      <p><b>Price:</b> Rp {{ product.price|intcomma }}</p>
+      <p><b>Stock:</b> <span class="stock-badge">{{ product.stock }}</span></p>
+    </div>
 
-{% if product.thumbnail %}
-    <img src="{{ product.thumbnail }}" alt="product thumbnail" width="300">
-    <br /><br />
-{% endif %}
+    <p class="product-desc">{{ product.description }}</p>
 
-
-<p>{{ product.description }}</p>
-
+    <div class="product-buttons" style="justify-content: flex-start; gap: 0.5rem; align-items: flex-start;">
+      <a href="{% url 'main:edit_product' product.id %}" class="edit-btn" style="flex: none;">Edit</a>
+      <a href="{% url 'main:delete_product' product.id %}" class="delete-btn" style="flex: none;">Delete</a>
+    </div>
+  </div>
+</div>
 {% endblock content %}

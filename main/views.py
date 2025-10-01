@@ -114,3 +114,35 @@ def logout_user(request):
     response = HttpResponseRedirect(reverse('main:login'))
     response.delete_cookie('last_login')
     return response
+
+@login_required(login_url='/login')
+def edit_product(request, id):
+    item = get_object_or_404(product, pk=id)
+    if request.method == 'POST':
+        form = productForm(request.POST, instance=item)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Produk berhasil diupdate!')
+            return redirect('main:show_product', id=item.pk)
+    else:
+        form = productForm(instance=item)
+    context = {'form': form, 'product': item}
+    return render(request, 'edit_product.html', context)
+
+def edit_product(request, id):
+    item = get_object_or_404(product, pk=id)
+    if request.method == 'POST':
+        form = productForm(request.POST, instance=item)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Produk berhasil diupdate!')
+            return redirect('main:show_product', id=item.pk)
+    else:
+        form = productForm(instance=item)
+    context = {'form': form, 'product': item}
+    return render(request, 'edit_product.html', context)
+
+def delete_product(request, id):
+    item = get_object_or_404(product, pk=id)
+    item.delete()
+    return HttpResponseRedirect(reverse('main:show_main'))
