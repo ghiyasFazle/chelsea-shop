@@ -1,52 +1,189 @@
 {% extends 'base.html' %}
-{% load static %} {# Pastikan ini ada di atas #}
+{% load static %}
 {% load humanize %}
 
 {% block title %}Dashboard | Chelsea Shop{% endblock title %}
 
 {% block content %}
 
+<div class="flex justify-center items-center gap-4 my-8">
+    <button class="btn btn-primary" id="add-product-btn">
+        + Add New Product
+    </button>
 
-
-<div class="profile-card">
-  <div class="profile-row">
-    <span class="profile-label">NPM:</span>
-    <span class="profile-value">{{ npm }}</span>
-  </div>
-  <div class="profile-row">
-    <span class="profile-label">Name:</span>
-    <span class="profile-value">{{ name }}</span>
-  </div>
-  <div class="profile-row">
-    <span class="profile-label">Class:</span>
-    <span class="profile-value">{{ class }}</span>
-  </div>
-  <div class="profile-row">
-    <span class="profile-label">Project Name:</span>
-    <span class="profile-value">{{ project }}</span>
-  </div>
-</div>
+  <button id="filter-all" class="btn btn-light">All Products</button>
+  <button id="filter-my" class="btn btn-light">My Products</button>
 
 </div>
 
-<hr class="my-4">
+<!-- AJAX state containers: all start hidden -->
+<style>
+  /* fallback hidden class if not provided by CSS framework */
+  .hidden { display: none !important; }
+  .state-container { padding: 1rem; text-align: center; }
+</style>
 
-{% if not product_list %}
-  <div class="no-product-container">
-    <img src="{% static 'images/no-product.png' %}" alt="No Products Found">
-    <h3>Anda Belum Memiliki Product</3>
+<div id="loading" class="state-container hidden">
+  <p>Loading products…</p>
+</div>
 
-    <p>Silahkan menambahkan product anda ke dalam toko.</p>
-    <a href="{% url 'main:create_product' %}" class="btn btn-primary" style="margin-top: 24px;">
-      + Add Product
-    </a>
+<div id="error" class="state-container hidden">
+  <p class="text-red-600">Something went wrong while fetching products.</p>
+  <button id="retry-btn" class="btn btn-primary">Retry</button>
+</div>
+
+<div id="empty" class="state-container hidden">
+  <img src="{% static 'images/no-product.png' %}" alt="No Products Found" style="max-width:200px; margin:0 auto;">
+  <h3>Anda Belum Memiliki Product</h3>
+  <p>Silahkan menambahkan product anda ke dalam toko.</p>
+  <p><a href="{% url 'main:create_product' %}" class="btn btn-primary">Add Product</a></p>
+</div>
+
+<div id="grid" class="hidden">
+  <div id="grid-inner" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 p-6">
+    <!-- product cards will be injected here by JS -->
   </div>
-{% else %}
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 p-6">
-    {% for product in product_list %}
-      {% include 'product_card.html' %}
-    {% endfor %}
-  </div>
+</div>
+
+<!-- Initial server-side rendered fallback (for non-JS clients). We still render product_list into a hidden template node that JS can use as a fallback if desired. -->
+<template id="ssr-products">
+{% if product_list %}
+  {% for product in product_list %}
+    {% include 'product_card.html' %}
+  {% endfor %}
 {% endif %}
+</template>
+
+<script>
+  (function(){
+    const loading = document.getElementById('loading');
+    const error = document.getElementById('error');
+    const empty = document.getElementById('empty');
+    const grid = document.getElementById('grid');
+    const gridInner = document.getElementById('grid-inner');
+    const retryBtn = document.getElementById('retry-btn');
+
+    function show(which){
+      [loading, error, empty, grid].forEach(el => el.classList.add('hidden'));
+      if(which) which.classList.remove('hidden');
+    }
+
+    async function fetchProducts(options = {}){
+      const filter = options.filter || null;
+      let url = '{% url "main:show_json" %}';
+      if(filter) url += '?filter=' + encodeURIComponent(filter);
+      show(loading);
+      try{
+        const res = await fetch(url);
+        if(!res.ok) throw new Error('Network response was not ok');
+        const data = await res.json();
+        if(!data || data.length === 0){
+          show(empty);
+          return;
+        }
+
+        // Number formatter for price
+        const fmt = new Intl.NumberFormat('id-ID');
+
+        // Clear grid and render items following product_card.html classes
+        gridInner.innerHTML = '';
+        data.forEach(item => {
+          try {
+            // support Django serializers (item.fields + item.pk)
+            // or plain object shapes returned by other APIs
+            let obj, pk;
+            if(item && typeof item === 'object' && 'fields' in item && 'pk' in item){
+              obj = item.fields;
+              pk = item.pk;
+            } else if(item && typeof item === 'object' && ('pk' in item || 'id' in item) && ('name' in item || 'title' in item)){
+              // DRF-like or custom shape
+              obj = item;
+              pk = item.pk ?? item.id;
+            } else {
+              console.warn('Skipping unexpected item format', item);
+              return; // skip malformed item
+            }
+
+            const card = document.createElement('div');
+            card.className = 'product-card';
+
+            const thumb = (obj && obj.thumbnail) ? obj.thumbnail : '';
+            const imgHtml = thumb ? `<div class="flex justify-center"><img src="${thumb}" alt="${escapeHtml(obj.name||'')}" class="product-image"></div>` : '';
+
+            const name = obj && obj.name ? obj.name : (obj && obj.title ? obj.title : 'No name');
+            const stock = obj && (obj.stock !== undefined) ? obj.stock : '-';
+            const price = obj && (obj.price !== undefined) ? obj.price : 0;
+            const desc = obj && obj.description ? obj.description : '';
+
+            card.innerHTML = `
+              <div class="product-header">
+                <h3>${escapeHtml(name)}</h3>
+                <span class="product-badge stock-badge">Stock: ${escapeHtml(stock)}</span>
+                <span class="product-badge price-badge">Rp ${fmt.format(price)}</span>
+              </div>
+              ${imgHtml}
+              <div class="product-desc">${escapeHtml(truncateWords(desc,25))}</div>
+              <div class="product-buttons">
+                <a href="${detailUrl(pk)}" class="read-more">Read More</a>
+                <a href="${editUrl(pk)}" class="edit-btn">Edit Product</a>
+                <a href="${deleteUrl(pk)}" class="delete-btn">Delete Product</a>
+              </div>
+            `;
+
+            gridInner.appendChild(card);
+          } catch (e) {
+            console.error('Error rendering item', e, item);
+          }
+        });
+
+        show(grid);
+
+      }catch(err){
+        console.error(err);
+        const errNode = document.getElementById('error');
+        if(errNode){
+          errNode.innerHTML = `<p class="text-red-600">${escapeHtml(err.message)}</p><button id="retry-btn" class="btn btn-primary">Retry</button>`;
+          document.getElementById('retry-btn').addEventListener('click', () => fetchProducts(options));
+        }
+        show(error);
+      }
+    }
+
+    // helpers
+    function escapeHtml(s){
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function truncateWords(text, count){
+      if(!text) return '';
+      const words = text.split(/\s+/).slice(0, count);
+      return words.join(' ') + (text.split(/\s+/).length>count ? '...' : '');
+    }
+
+    function detailUrl(pk){ return `/product/${pk}/`; }
+    function editUrl(pk){ return `/product/${pk}/edit/`; }
+    function deleteUrl(pk){ return `/product/${pk}/delete`; }
+
+    retryBtn && retryBtn.addEventListener('click', fetchProducts);
+
+    // run on load
+    document.addEventListener('DOMContentLoaded', function(){
+      // If the template has server-side rendered cards, use them as fast fallback before fetching
+      const ssr = document.getElementById('ssr-products');
+      if(ssr && ssr.content && ssr.content.children.length>0){
+        gridInner.append(...Array.from(ssr.content.children));
+        show(grid);
+      }
+      // wire filter buttons
+      const btnAll = document.getElementById('filter-all');
+      const btnMy = document.getElementById('filter-my');
+      btnAll && btnAll.addEventListener('click', function(){ fetchProducts({filter: 'all'}); });
+      btnMy && btnMy.addEventListener('click', function(){ fetchProducts({filter: 'my'}); });
+
+      // then fetch fresh data (default all)
+      fetchProducts({filter: 'all'});
+    });
+  })();
+</script>
 
 {% endblock %}

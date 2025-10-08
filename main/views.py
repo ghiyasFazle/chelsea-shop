@@ -1,14 +1,14 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from main.forms import productForm
 from main.models import product
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.core import serializers
 from django.contrib import messages
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 import datetime
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect , JsonResponse
 from django.urls import reverse
 
 # pass pws : ekqM5XlR7RbiVjz9_s7JXrQtG_Golr-Q
@@ -61,10 +61,27 @@ def show_xml(request):
     return HttpResponse(xml_data, content_type="application/xml")
 
 def show_json(request):
-    product_list = product.objects.all()
-    json_data = serializers.serialize("json", product_list)
-    return HttpResponse(json_data, content_type="application/json")
+    filter_type = request.GET.get('filter', 'all')
+    qs = product.objects.all()
+    if filter_type == 'my' and request.user.is_authenticated:
+        qs = qs.filter(user=request.user)
 
+    data = []
+    for p in qs:
+        data.append({
+            'id': str(p.id),
+            'name': p.name,
+            'description': p.description,
+            'price': p.price,
+            'stock': p.stock,
+            'category': p.category,
+            'thumbnail': p.thumbnail,
+            'is_sale': p.is_sale,
+            'user_id': p.user.id if p.user else None,
+            'username': p.user.username if p.user else 'Anonymous',
+        })
+
+    return JsonResponse(data, safe=False)
 def show_xml_by_id(request, product_id):
    try:
        product_item = product.objects.filter(pk=product_id)
@@ -75,11 +92,22 @@ def show_xml_by_id(request, product_id):
    
 def show_json_by_id(request, product_id):
    try:
-       product_item = product.objects.get(pk=product_id)
-       json_data = serializers.serialize("json", [product_item])
-       return HttpResponse(json_data, content_type="application/json")
+       p = product.objects.get(pk=product_id)
+       data = {
+           'id': str(p.id),
+           'name': p.name,
+           'description': p.description,
+           'price': p.price,
+           'stock': p.stock,
+           'category': p.category,
+           'thumbnail': p.thumbnail,
+           'is_sale': p.is_sale,
+           'user_id': p.user.id if p.user else None,
+           'username': p.user.username if p.user else 'Anonymous',
+       }
+       return JsonResponse(data)
    except product.DoesNotExist:
-       return HttpResponse(status=404)
+       return JsonResponse({'error': 'Not found'}, status=404)
    
 def register(request):
     form = UserCreationForm()

@@ -2,7 +2,6 @@
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex justify-between h-16 items-center">
       
-      <!-- Logo + Brand -->
       <div class="flex items-center gap-3">
         <img src="https://upload.wikimedia.org/wikipedia/en/c/cc/Chelsea_FC.svg" 
              alt="Chelsea Logo" class="w-10 h-10">
@@ -11,18 +10,13 @@
         </a>
       </div>
 
-      <!-- Navigation Links -->
-      <div class="hidden md:flex items-center gap-6">
+      <div class="flex items-center gap-6">
         <a href="{% url 'main:show_main' %}" class="hover:text-yellow-300">Home</a>
-        <a href="{% url 'main:create_product' %}" class="hover:text-yellow-300">Add Product</a>
-        <a href="?filter=all" class="hover:text-yellow-300">All Products</a>
-        <a href="?filter=my" class="hover:text-yellow-300">My Products</a>
       </div>
 
-      <!-- User Section -->
       <div class="flex items-center gap-4">
         {% if user.is_authenticated %}
-          <div class="hidden sm:block text-sm leading-tight text-right">
+          <div class="text-sm leading-tight text-right">
             <p>Welcome, <b>{{ user.username }}</b></p>
             <p class="text-xs text-gray-200">Last login: {{ user.last_login|date:"d M Y, H:i" }}</p>
           </div>
@@ -30,6 +24,7 @@
              class="bg-red-600 px-3 py-1 rounded-md text-sm font-medium hover:bg-red-700 transition">
             Logout
           </a>
+          
         {% else %}
           <a href="{% url 'main:login' %}" class="hover:text-yellow-300">Login</a>
           <a href="{% url 'main:register' %}" class="hover:text-yellow-300">Register</a>

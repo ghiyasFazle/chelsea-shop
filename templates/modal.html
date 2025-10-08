@@ -1,0 +1,129 @@
+<!-- Reusable Product Modal (uses global.css classes) -->
+<div id="productModal" class="hidden fixed inset-0 z-50 w-full flex items-center justify-center" style="background: rgba(0,0,0,0.5);">
+  <div id="productModalContent" class="product-card w-11/12 sm:w-3/4 md:w-2/3 lg:w-1/2 max-h-[90vh] overflow-y-auto">
+    <!-- Header -->
+    <div class="flex items-start justify-between mb-4">
+      <div>
+        <h3 id="modalTitle" class="text-xl font-semibold text-gray-900">Create Product</h3>
+        <p id="modalSubtitle" class="text-sm text-gray-600 mt-1">Add a new product to your store</p>
+      </div>
+      <button type="button" id="modalCloseBtn" class="text-gray-500 hover:text-gray-900" aria-label="Close modal">×</button>
+    </div>
+
+    <!-- Body: product form -->
+    <div class="mb-4">
+      <form id="productModalForm" class="auth-form">
+        <input type="hidden" id="modalProductId" name="id">
+
+        <label for="modalName">Name</label>
+        <input id="modalName" name="name" type="text" required />
+
+        <label for="modalDescription">Description</label>
+        <textarea id="modalDescription" name="description" rows="4"></textarea>
+
+        <div style="display:flex; gap:0.75rem;">
+          <div style="flex:1;">
+            <label for="modalPrice">Price (Rp)</label>
+            <input id="modalPrice" name="price" type="number" min="0" />
+          </div>
+          <div style="width:120px;">
+            <label for="modalStock">Stock</label>
+            <input id="modalStock" name="stock" type="number" min="0" />
+          </div>
+        </div>
+
+        <label for="modalCategory">Category</label>
+        <select id="modalCategory" name="category">
+          <option value="">-- choose category --</option>
+          <option value="scarves">Scarves</option>
+          <option value="socks">Socks</option>
+          <option value="accessories">Accessories</option>
+          <option value="away">Away Jersey</option>
+          <option value="home">Home Jersey</option>
+          <option value="third">Third Jersey</option>
+          <option value="badges">Badges</option>
+        </select>
+
+        <label for="modalThumbnail">Thumbnail URL</label>
+        <input id="modalThumbnail" name="thumbnail" type="url" placeholder="https://example.com/image.jpg" />
+
+        <div style="display:flex; align-items:center; gap:0.5rem; margin-top:0.5rem;">
+          <input id="modalIsSale" name="is_sale" type="checkbox" />
+          <label for="modalIsSale">On Sale</label>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- Footer -->
+    <div class="flex justify-end gap-3 mt-3">
+      <button type="button" id="modalCancel" class="btn btn-light">Cancel</button>
+      <button type="button" id="modalSubmit" class="btn btn-primary">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function(){
+    const modal = document.getElementById('productModal');
+    const modalContent = document.getElementById('productModalContent');
+    const closeBtn = document.getElementById('modalCloseBtn');
+    const cancelBtn = document.getElementById('modalCancel');
+    const submitBtn = document.getElementById('modalSubmit');
+    const form = document.getElementById('productModalForm');
+
+    function showModal(mode = 'create', data = null){
+      document.getElementById('modalTitle').textContent = mode === 'edit' ? 'Edit Product' : 'Create Product';
+      document.getElementById('modalSubtitle').textContent = mode === 'edit' ? 'Update product details' : 'Add a new product to your store';
+
+      // populate
+      if(data){
+        document.getElementById('modalProductId').value = data.id || '';
+        document.getElementById('modalName').value = data.name || '';
+        document.getElementById('modalDescription').value = data.description || '';
+        document.getElementById('modalPrice').value = data.price ?? '';
+        document.getElementById('modalStock').value = data.stock ?? '';
+        document.getElementById('modalCategory').value = data.category || '';
+        document.getElementById('modalThumbnail').value = data.thumbnail || '';
+        document.getElementById('modalIsSale').checked = !!data.is_sale;
+      } else {
+        form.reset();
+        document.getElementById('modalProductId').value = '';
+      }
+
+      modal.classList.remove('hidden');
+      // focus first field
+      setTimeout(()=> document.getElementById('modalName').focus(), 50);
+    }
+
+    function hideModal(){
+      modal.classList.add('hidden');
+    }
+
+    // click handlers
+    closeBtn && closeBtn.addEventListener('click', hideModal);
+    cancelBtn && cancelBtn.addEventListener('click', hideModal);
+
+    // clicking outside modal content closes it
+    modal && modal.addEventListener('click', function(e){ if(e.target === modal) hideModal(); });
+
+    // ESC key
+    document.addEventListener('keydown', function(e){ if(e.key === 'Escape') hideModal(); });
+
+    // submit behavior: by default, just emit CustomEvent with form data
+    submitBtn && submitBtn.addEventListener('click', function(){
+      const fd = new FormData(form);
+      const obj = {};
+      fd.forEach((v,k)=>{ if(k==='is_sale') obj[k] = true; else obj[k] = v });
+      // ensure boolean for is_sale
+      obj.is_sale = document.getElementById('modalIsSale').checked;
+      // fire event so page can listen and perform AJAX
+      document.dispatchEvent(new CustomEvent('productModalSubmit', { detail: obj }));
+      hideModal();
+    });
+
+    // expose helpers
+    window.showProductModal = showModal;
+    window.hideProductModal = hideModal;
+  })();
+</script>

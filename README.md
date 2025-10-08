@@ -150,3 +150,48 @@ Grid layout adalah sistem layout dua dimensi, bisa baris dan kolom. Kegunaannya 
 -Buka template HTML yang sudah ada, kustomisasi menggunakan CSS Tailwind untuk halaman login, register, tambah product, edit product, dan detail product, tambahkan style yang menarik misalnya warna, shadow, padding, radius pada input dan button
 -buat pengecekan untuk halaman filter daftar product, cek apakah ada product. Jika tidak ada, tampilkan gambar dan pesan "belum ada product".Jika ada, buat card untuk setiap product dengan informasi product, lalu buat dua button untuk edit dan hapus
 -Buat navigation bar di bagian atas halaman, pastikan responsive dengan menambahkan kelas untuk mobile dan desktop jika pakai CSS framework
+
+
+###### TUGAS 6 ######
+1. Jelaskan perbedaan antara synchronous request dan asynchronous request!
+Jawaban: Singkatnya, synchronous itu kayak nelpon, sifatnya memblokir. Jadi, browser harus nungguin server selesai merespons dulu baru pengguna bisa melakukan hal lain di halaman itu. Sedangkan asynchronous (yang dipakai AJAX) itu kayak nge-chat. Browser bisa kirim permintaan di latar belakang sambil pengguna tetap bisa berinteraksi dengan halaman. Nanti kalau respons dari server sudah datang, baru tampilan halamannya di-update.
+
+2. Buatlah alur yang menjelaskan cara kerja AJAX di Django!
+Jawaban: Alurnya seperti ini:
+Aksi User (Klik Tombol) -> JavaScript (mencegah reload & mengirim request fetch ke URL tertentu) -> urls.py Django (menerima request dan mengarahkannya ke view) -> views.py Django (memproses logika, misalnya menyimpan data ke database) -> views.py (tidak me-render HTML, tapi mengembalikan JsonResponse berisi data) -> JavaScript (menerima data JSON dan mengubah tampilan halaman secara langsung tanpa reload).
+
+3. Sebutkan dan jelaskan keuntungan menggunakan AJAX dibandingkan dengan render biasa di Django!
+Jawaban:
+
+UX Lebih Enak: Interaksi terasa lebih cepat dan mulus karena tidak ada reload halaman yang mengganggu. Bikin website terasa seperti aplikasi modern.
+
+Beban Server Lebih Ringan: Server hanya perlu mengirim data JSON yang ukurannya kecil, bukan file HTML utuh yang besar. Ini membuat server lebih efisien.
+
+Hemat Bandwidth: Karena transfer datanya lebih kecil, penggunaan kuota internet jadi lebih irit.
+
+Lebih Interaktif: Memungkinkan pembuatan fitur-fitur canggih seperti live search, notifikasi real-time, atau infinite scroll.
+
+4. Bagaimana cara memastikan keamanan saat menggunakan AJAX untuk fitur Login dan Register di Django? Apa saja yang harus diwaspadai?
+Jawaban: 
+Keamanan itu menurut saya wajib. Caranya:
+Wajib Pakai CSRF Token: Ini adalah "satpam" utama dari Django untuk mencegah serangan Cross-Site Request Forgery. Setiap request AJAX yang mengubah data (seperti POST) harus menyertakan token ini di dalam header-nya.
+
+Gunakan HTTPS: Ini untuk mengenkripsi data yang dikirim, jadi password dan data sensitif lainnya tidak bisa diintip di tengah jalan.
+
+Validasi Tetap di Server: Jangan pernah 100% percaya pada validasi yang dilakukan di frontend (JavaScript). Semua data harus divalidasi ulang di views.py sebelum disimpan ke database.
+
+5. Jelaskan bagaimana AJAX dapat mempengaruhi pengalaman pengguna (User Experience) pada sebuah website!
+Jawaban: AJAX membuat pengalaman pengguna jadi jauh lebih baik. Aksi terasa instan karena pengguna langsung mendapat feedback visual tanpa harus menunggu halaman me-muat ulang. Alur aktivitas pengguna juga tidak terputus, sehingga mereka bisa tetap fokus pada tugasnya. Secara keseluruhan, website jadi terasa lebih responsif, mulus, dan modern, mirip seperti menggunakan aplikasi di smartphone.
+
+6. Jelaskan bagaimana cara kamu mengimplementasikan checklist di atas secara step-by-step.
+Jawaban:
+
+-Pertama, saya merombak views.py. Fungsi-fungsi yang tadinya menggunakan render() untuk menampilkan halaman HTML, saya ubah agar mengembalikan JsonResponse yang berisi data.
+
+-Kedua, saya membuat URL path baru di urls.py khusus untuk endpoint-endpoint AJAX ini.
+
+-Ketiga, di frontend, saya membuat file JavaScript baru untuk menangani semua logika AJAX.
+
+-Di dalam JavaScript, saya menggunakan fetch() API untuk memanggil endpoint yang sudah saya buat di Django setiap kali ada aksi dari pengguna (misalnya, klik tombol).
+
+-Terakhir, setelah fetch() berhasil mendapatkan respons JSON dari server, saya pakai data tersebut untuk memanipulasi DOM, yaitu mengubah atau memperbarui tampilan halaman HTML secara langsung tanpa perlu reload.

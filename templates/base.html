@@ -6,17 +6,26 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1">
   {% endblock meta %}
+
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="{% static 'css/global.css' %}"/>
+  <link rel="stylesheet" href="{% static 'css/global.css' %}">
+  <link rel="stylesheet" href="{% static 'css/toast.css' %}"> 
   <title>{% block title %}Chelsea Shop{% endblock title %}</title>
 </head>
+
 <body class="bg-gray-100">
 
   {% include "navbar.html" %}
 
   <main class="p-6">
-    {% block content %}{% endblock content %}
+    {% block content %}
+    {% endblock content %}
   </main>
 
+  {% include "toast.html" %} 
+
+  <script src="{% static 'js/toast.js' %}"></script> 
+  {% block extra_scripts %}{% endblock extra_scripts %}
+  
 </body>
 </html>

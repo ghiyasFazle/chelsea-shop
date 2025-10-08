@@ -1,15 +1,38 @@
 /* global.css */
+/* Theme variables */
+:root{
+  --bg-gradient: linear-gradient(to bottom, #001f42, #3b82f6, #1e3a8a);
+  --surface: #ffffff;
+  --muted: #4b5563;
+  --accent: #034694; /* Chelsea Blue */
+  --accent-dark: #003f6c;
+  --card-shadow: 0 6px 12px rgba(0,0,0,0.1);
+  --glass: rgba(255,255,255,0.1);
+}
+
+/* Light theme overrides */
+.theme-light{
+  --bg-gradient: linear-gradient(to bottom, #f8fafc, #ffffff);
+  --surface: #ffffff;
+  --muted: #374151;
+  --accent: #034694;
+  --accent-dark: #003f6c;
+  --card-shadow: 0 6px 12px rgba(0,0,0,0.06);
+  --glass: rgba(0,0,0,0.03);
+}
+
 /* Global background */
 html, body {
   margin: 0;
   min-height: 100vh; 
-  background: linear-gradient(to bottom, #001f42, #3b82f6, #1e3a8a);
+  background: var(--bg-gradient);
   background-attachment: fixed; 
   background-size: cover;
+  color: var(--muted);
 }
 
 .profile-card {
-  background-color: #034694; /* Chelsea Blue */
+  background-color: var(--accent); /* Chelsea Blue */
   color: white;
   padding: 1rem 1.5rem;
   border-radius: 0.5rem;
@@ -45,18 +68,18 @@ html, body {
 }
 
 .btn-primary {
-  background: #034694;
+  background: var(--accent);
   color: white;
 }
 
 .btn-primary:hover {
-  background: #003f6c;
+  background: var(--accent-dark);
 }
 
 
 .btn-light {
-  background: #ffffff;
-  color: #000a64;
+  background: var(--surface);
+  color: var(--accent-dark);
 }
 
 .btn-light:hover {
@@ -65,10 +88,10 @@ html, body {
 
 /* Product */
 .product-card {
-  background: white;
+  background: var(--surface);
   border-radius: 0.75rem;
   padding: 1.25rem;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--card-shadow);
   transition: transform 0.2s ease-in-out;
   display: flex;
   flex-direction: column;
@@ -91,7 +114,7 @@ html, body {
 .product-header h3 {
   font-size: 1.25rem;
   font-weight: bold;
-  color: #1e40af;
+  color: var(--accent-dark);
 }
 
 .product-badge {
@@ -104,12 +127,12 @@ html, body {
 
 .stock-badge {
   background: #dbeafe;
-  color: #1e3a8a;
+  color: var(--accent-dark);
 }
 
 .price-badge {
   background: #dbeafe;
-  color: #1e3a8a;
+  color: var(--accent-dark);
 }
 
 .product-image {
@@ -123,7 +146,7 @@ html, body {
 }
 
 .product-desc {
-  color: #4b5563;
+  color: var(--muted);
   margin-bottom: 1rem;
 }
 

@@ -5,9 +5,9 @@ from django.contrib.auth.models import User
 
 class product(models.Model):
     CATEGORY_CHOICES = [
-        ('transfer', 'Transfer'),
+        ('scarves', 'Scarves'),
         ('socks', 'Socks'),
-        ('exclusive', 'Exclusive'),
+        ('accessories', 'Accessories'),
         ('away', 'Away Jersey'),
         ('home','Home Jersey'),
         ('third','Third Jersey'),
@@ -26,4 +26,4 @@ class product(models.Model):
     
     
     def __str__(self):
-        return self.title
+        return self.name
