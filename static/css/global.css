@@ -67,6 +67,9 @@ html, body {
   display: inline-block;
 }
 
+/* small button variant */
+.btn-sm { padding: 6px 10px; font-size: 0.875rem; border-radius: 6px; }
+
 .btn-primary {
   background: var(--accent);
   color: white;
@@ -144,6 +147,39 @@ html, body {
   margin-bottom: 1rem;
   padding: 0.5rem;
 }
+
+/* Navbar tweaks */
+.navbar-center { gap: 0.75rem; }
+.nav-link { color: white; font-weight:600; text-decoration:none; padding: 0.25rem 0.5rem; background: transparent; border: none; cursor: pointer; border-radius: 6px; transition: all 0.15s ease-in-out; }
+.nav-link:hover { color: white; background: var(--accent-dark); transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.12); }
+
+/* absolute center block for navbar */
+.navbar-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+}
+
+@media (max-width: 768px){
+  .navbar-center { position: static; transform: none; justify-content: center; margin-left:0; }
+}
+
+/* right-anchored control group in navbar */
+.navbar-right { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); display:flex; gap:0.5rem; align-items:center; }
+
+.navbar-right .user-info {
+  display:flex;
+  flex-direction:row;
+  align-items:center;
+  gap:0.6rem;
+  margin-right:1rem; /* increased spacing so info sits clearly left of buttons */
+  white-space:nowrap; /* prevent wrapping so it's left of the buttons */
+  text-align: left;
+}
+.navbar-right .user-info .welcome { display:inline-block; }
+.navbar-right .user-info .last-login { display:inline-block; opacity:0.9; font-size:0.85rem; color: rgba(255,255,255,0.95); }
 
 .product-desc {
   color: var(--muted);

@@ -10,24 +10,25 @@
         </a>
       </div>
 
-      <div class="flex items-center gap-6">
-        <a href="{% url 'main:show_main' %}" class="hover:text-yellow-300">Home</a>
+      <div class="flex-1 flex items-center justify-center navbar-center">
+        <button id="nav-home-btn" data-href="{% url 'main:show_main' %}" class="btn btn-primary btn-sm" aria-label="Home">Home</button>
+        {% if user.is_authenticated %}
+          <button id="nav-add-product" class="btn btn-primary btn-sm ml-2">Add Product</button>
+        {% endif %}
       </div>
 
-      <div class="flex items-center gap-4">
+      <div class="navbar-right flex items-center">
         {% if user.is_authenticated %}
-          <div class="text-sm leading-tight text-right">
-            <p>Welcome, <b>{{ user.username }}</b></p>
-            <p class="text-xs text-gray-200">Last login: {{ user.last_login|date:"d M Y, H:i" }}</p>
+          <div class="user-info flex items-center text-sm text-right mr-4">
+            <span class="welcome">Welcome, <b>{{ user.username }}</b></span>
           </div>
-          <a href="{% url 'main:logout' %}" 
-             class="bg-red-600 px-3 py-1 rounded-md text-sm font-medium hover:bg-red-700 transition">
-            Logout
-          </a>
-          
+          <button id="nav-refresh-btn" title="Refresh products" aria-label="Refresh products" class="btn btn-light btn-sm">⟳</button>
+          <a href="{% url 'main:logout' %}" id="logout-button-ajax" class="btn btn-sm ml-2" style="background:#dc2626;color:white;">Logout</a>
         {% else %}
-          <a href="{% url 'main:login' %}" class="hover:text-yellow-300">Login</a>
-          <a href="{% url 'main:register' %}" class="hover:text-yellow-300">Register</a>
+          <div class="flex items-center gap-2">
+            <a href="{% url 'main:login' %}" class="hover:text-yellow-300">Login</a>
+            <a href="{% url 'main:register' %}" class="bg-blue-500 px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-600 transition">Register</a>
+          </div>
         {% endif %}
       </div>
 

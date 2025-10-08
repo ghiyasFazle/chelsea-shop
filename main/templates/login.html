@@ -9,13 +9,66 @@
   <div class="auth-card">
     <h1 class="auth-title">Login</h1>
 
-    <form method="POST" action="">
+    <form id="loginForm" method="POST" action="">
       {% csrf_token %}
       <div class="auth-form">
         {{ form.as_p }}
         <button type="submit" class="auth-btn">Login</button>
       </div>
     </form>
+
+    <div id="loginErrors" class="auth-messages" style="display:none;color:#b91c1c;"></div>
+
+    <script>
+      (function(){
+        const form = document.getElementById('loginForm');
+        const errBox = document.getElementById('loginErrors');
+
+        function getCookie(name){
+          const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+          return v ? v.pop() : '';
+        }
+
+        form && form.addEventListener('submit', async function(e){
+          e.preventDefault();
+          errBox.style.display = 'none'; errBox.innerHTML = '';
+          const fd = new FormData(form);
+          const body = new URLSearchParams();
+          fd.forEach((v,k)=> body.append(k,v));
+
+          try{
+            const res = await fetch(window.location.href, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                'X-CSRFToken': getCookie('csrftoken'),
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+              },
+              body: body.toString()
+            });
+
+            if(res.ok){
+              const j = await res.json();
+              try{ showToast && showToast('Logged in', 'success'); }catch(e){}
+              // give toast a moment to appear before redirecting
+              if(j.redirect){ setTimeout(()=> window.location.href = j.redirect, 600); }
+            } else {
+              const j = await res.json().catch(()=>({error: 'Unknown error'}));
+              // display errors
+              const html = j.non_field_errors ? ('<p>'+ j.non_field_errors.join('<br>') +'</p>') : (j.error? '<p>'+j.error+'</p>' : '');
+              errBox.innerHTML = html || '<p>Login failed</p>';
+              errBox.style.display = 'block';
+              try{ showToast && showToast('Login failed', 'error'); }catch(e){}
+            }
+
+          }catch(err){
+            errBox.innerHTML = '<p>'+ err.message +'</p>';
+            errBox.style.display = 'block';
+          }
+        });
+      })();
+    </script>
 
     {% if messages %}
     <div class="auth-messages">

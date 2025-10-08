@@ -18,7 +18,7 @@
 
   <div class="product-buttons">
     <a href="{% url 'main:show_product' product.id %}" class="read-more">Read More</a>
-    <a href="{% url 'main:edit_product' product.id %}" class="edit-btn">Edit Product</a>
-    <a href="{% url 'main:delete_product' product.id %}" class="delete-btn">Delete Product</a>
+  <button type="button" class="edit-btn edit-trigger" data-id="{{ product.id }}">Edit Product</button>
+  <button type="button" class="delete-btn delete-trigger" data-id="{{ product.id }}">Delete Product</button>
   </div>
 </div>

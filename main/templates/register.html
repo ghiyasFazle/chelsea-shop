@@ -9,13 +9,75 @@
   <div class="auth-card">
     <h1 class="auth-title">Register</h1>
 
-    <form method="POST">
+    <form id="registerForm" method="POST">
       {% csrf_token %}
       <div class="auth-form">
         {{ form.as_p }}
         <button type="submit" class="auth-btn">Register</button>
       </div>
     </form>
+
+    <div id="regErrors" class="auth-messages" style="display:none;color:#b91c1c;"></div>
+
+    <script>
+      (function(){
+        const form = document.getElementById('registerForm');
+        const errBox = document.getElementById('regErrors');
+
+        function getCookie(name){
+          const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+          return v ? v.pop() : '';
+        }
+
+        form && form.addEventListener('submit', async function(e){
+          e.preventDefault();
+          errBox.style.display = 'none'; errBox.innerHTML = '';
+          const fd = new FormData(form);
+          const body = new URLSearchParams();
+          fd.forEach((v,k)=> body.append(k,v));
+
+          try{
+            const res = await fetch(window.location.href, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                'X-CSRFToken': getCookie('csrftoken'),
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+              },
+              body: body.toString()
+            });
+
+            const j = await res.json().catch(()=>({}));
+            if(res.ok && j.success){
+              try{ showToast && showToast('Account created', 'success'); }catch(e){}
+              if(j.redirect){ setTimeout(()=> window.location.href = j.redirect, 600); }
+              else setTimeout(()=> window.location.href = '{% url "main:login" %}', 600);
+              return;
+            }
+
+            // show validation errors
+            if(j.errors){
+              let html = '';
+              for(const [field, msgs] of Object.entries(j.errors)){
+                html += `<p><strong>${field}</strong>: ${msgs.join('<br>')}</p>`;
+              }
+              errBox.innerHTML = html;
+              errBox.style.display = 'block';
+              try{ showToast && showToast('Registration failed', 'error'); }catch(e){}
+            } else {
+              errBox.innerHTML = '<p>Registration failed</p>';
+              errBox.style.display = 'block';
+              try{ showToast && showToast('Registration failed', 'error'); }catch(e){}
+            }
+
+          }catch(err){
+            errBox.innerHTML = '<p>'+ err.message +'</p>';
+            errBox.style.display = 'block';
+          }
+        });
+      })();
+    </script>
 
     {% if messages %}
     <div class="auth-messages">

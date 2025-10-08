@@ -25,6 +25,43 @@
   {% include "toast.html" %} 
 
   <script src="{% static 'js/toast.js' %}"></script> 
+  <script>
+    // dispatch a global event when the navbar refresh button is clicked
+    document.addEventListener('DOMContentLoaded', function(){
+      const btn = document.getElementById('nav-refresh-btn');
+      if(btn){
+        btn.addEventListener('click', function(){
+          document.dispatchEvent(new CustomEvent('refreshProducts'));
+        });
+      }
+      const addBtn = document.getElementById('nav-add-product');
+      if(addBtn){
+        addBtn.addEventListener('click', function(){
+          document.dispatchEvent(new CustomEvent('openProductModal'));
+        });
+      }
+      const homeBtn = document.getElementById('nav-home-btn');
+      if(homeBtn){
+        homeBtn.addEventListener('click', function(){
+          const href = this.dataset.href || '/';
+          window.location.href = href;
+        });
+      }
+
+      // logout confirmation + toast
+      const logoutLink = document.getElementById('logout-button-ajax');
+      if(logoutLink){
+        logoutLink.addEventListener('click', function(e){
+          e.preventDefault();
+          const href = this.href;
+          const ok = confirm('Anda yakin ingin logout?');
+          if(!ok) return;
+          try{ showToast && showToast('Logged out', 'info'); }catch(e){}
+          setTimeout(()=> window.location.href = href, 500);
+        });
+      }
+    });
+  </script>
   {% block extra_scripts %}{% endblock extra_scripts %}
   
 </body>

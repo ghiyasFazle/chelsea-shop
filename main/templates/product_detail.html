@@ -78,12 +78,13 @@
                     </div>
                     <div>
                         <a id="edit-link" href="{% url 'main:edit_product' product.id %}" class="edit-btn inline-block px-4 py-2">Edit</a>
-                        <a id="delete-link" href="{% url 'main:delete_product' product.id %}" class="delete-btn inline-block px-4 py-2 ml-2">Delete</a>
+                        <button id="delete-btn" type="button" data-id="{{ product.id }}" class="delete-btn inline-block px-4 py-2 ml-2">Delete</button>
                     </div>
                 </div>
             </div>
         </article>
     </div>
+    {% include 'confirm_modal.html' %}
     <script>
       (function(){
         const loading = document.getElementById('loading-state');
@@ -126,6 +127,25 @@
           // show SSR content while fetching
           if(article) article.classList.remove('hidden');
           fetchDetail();
+
+                    // wire detail page delete button to show confirm modal and perform AJAX delete
+                    const deleteBtn = document.getElementById('delete-btn');
+                    if(deleteBtn){
+                        deleteBtn.addEventListener('click', async function(){
+                            const id = this.dataset.id;
+                                            try{
+                                                const confirmed = await window.showConfirmModal('Hapus produk ini? Tindakan ini tidak bisa dibatalkan.');
+                                                if(!confirmed) return;
+                                                function getCookie(name){ const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)'); return v ? v.pop() : ''; }
+                                                window.setConfirmLoading && window.setConfirmLoading(true);
+                                                const res = await fetch(`/product/${encodeURIComponent(id)}/delete`, { method: 'POST', headers: { 'X-CSRFToken': getCookie('csrftoken'), 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } });
+                                                if(!res.ok) throw new Error('Delete failed');
+                                                // show toast then redirect back to listing after delete
+                                                try{ showToast && showToast('Product deleted', 'success'); }catch(e){}
+                                                window.location.href = '{% url "main:show_main" %}';
+                                            }catch(err){ console.error(err); alert('Gagal menghapus produk'); }finally{ window.setConfirmLoading && window.setConfirmLoading(false); }
+                        });
+                    }
         });
       })();
     </script>

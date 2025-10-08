@@ -37,11 +37,31 @@ def show_main(request):
 def create_product(request):
     form = productForm(request.POST or None)
 
-    if form.is_valid() and request.method == "POST":
-        product_entry = form.save(commit=False)
-        product_entry.user = request.user
-        product_entry.save()
-        return redirect('main:show_main')
+    if request.method == "POST":
+        form = productForm(request.POST)
+        if form.is_valid():
+            product_entry = form.save(commit=False)
+            product_entry.user = request.user
+            product_entry.save()
+            # If AJAX request, return JSON with created product data
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest' or 'application/json' in request.headers.get('accept', ''):
+                return JsonResponse({
+                    'success': True,
+                    'product': {
+                        'id': str(product_entry.id),
+                        'name': product_entry.name,
+                        'description': product_entry.description,
+                        'price': product_entry.price,
+                        'stock': product_entry.stock,
+                        'category': product_entry.category,
+                        'thumbnail': product_entry.thumbnail,
+                        'is_sale': product_entry.is_sale,
+                    }
+                })
+            return redirect('main:show_main')
+        else:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest' or 'application/json' in request.headers.get('accept', ''):
+                return JsonResponse({'success': False, 'errors': form.errors}, status=400)
 
     context = {'form': form}
     return render(request, "create_product.html", context)
@@ -117,25 +137,41 @@ def register(request):
         if form.is_valid():
             form.save()
             messages.success(request, 'Your account has been successfully created!')
+            # If request is AJAX/fetch, return JSON instead of redirect
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest' or 'application/json' in request.headers.get('accept', ''):
+                return JsonResponse({'success': True, 'redirect': reverse('main:login')})
             return redirect('main:login')
+        else:
+            # on AJAX return validation errors as JSON
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest' or 'application/json' in request.headers.get('accept', ''):
+                return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+
     context = {'form':form}
     return render(request, 'register.html', context)
 
 def login_user(request):
-   if request.method == 'POST':
-      form = AuthenticationForm(data=request.POST)
+    if request.method == 'POST':
+        form = AuthenticationForm(data=request.POST)
 
-      if form.is_valid():
-        user = form.get_user()
-        login(request, user)
-        response = HttpResponseRedirect(reverse("main:show_main"))
-        response.set_cookie('last_login', str(datetime.datetime.now()))
-        return response
+        if form.is_valid():
+          user = form.get_user()
+          login(request, user)
+          # build response
+          redirect_url = reverse("main:show_main")
+          # If AJAX request, return JSON with redirect and set cookie on JsonResponse
+          if request.headers.get('x-requested-with') == 'XMLHttpRequest' or 'application/json' in request.headers.get('accept', ''):
+                resp = JsonResponse({'success': True, 'redirect': redirect_url})
+                resp.set_cookie('last_login', str(datetime.datetime.now()))
+                return resp
 
-   else:
-      form = AuthenticationForm(request)
-   context = {'form': form}
-   return render(request, 'login.html', context)
+          response = HttpResponseRedirect(redirect_url)
+          response.set_cookie('last_login', str(datetime.datetime.now()))
+          return response
+
+    else:
+        form = AuthenticationForm(request)
+    context = {'form': form}
+    return render(request, 'login.html', context)
 
 def logout_user(request):
     logout(request)
@@ -151,7 +187,12 @@ def edit_product(request, id):
         if form.is_valid():
             form.save()
             messages.success(request, 'Produk berhasil diupdate!')
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest' or 'application/json' in request.headers.get('accept', ''):
+                return JsonResponse({'success': True, 'product': {'id': str(item.id)}})
             return redirect('main:show_product', id=item.pk)
+        else:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest' or 'application/json' in request.headers.get('accept', ''):
+                return JsonResponse({'success': False, 'errors': form.errors}, status=400)
     else:
         form = productForm(instance=item)
     context = {'form': form, 'product': item}
@@ -173,4 +214,7 @@ def edit_product(request, id):
 def delete_product(request, id):
     item = get_object_or_404(product, pk=id)
     item.delete()
+    # If request was made via AJAX/fetch, return JSON so client can update without redirect
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest' or 'application/json' in request.headers.get('accept', ''):
+        return JsonResponse({'success': True})
     return HttpResponseRedirect(reverse('main:show_main'))

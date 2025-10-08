@@ -53,6 +53,7 @@
         </div>
 
       </form>
+      <div id="modalErrors" style="color:#b91c1c; margin-top:0.5rem; display:none;"></div>
     </div>
 
     <!-- Footer -->
@@ -110,20 +111,43 @@
     // ESC key
     document.addEventListener('keydown', function(e){ if(e.key === 'Escape') hideModal(); });
 
-    // submit behavior: by default, just emit CustomEvent with form data
+    // submit behavior: emit CustomEvent with form data, but don't auto-hide — caller will hide on success
     submitBtn && submitBtn.addEventListener('click', function(){
       const fd = new FormData(form);
       const obj = {};
-      fd.forEach((v,k)=>{ if(k==='is_sale') obj[k] = true; else obj[k] = v });
+      fd.forEach((v,k)=>{ obj[k] = v });
       // ensure boolean for is_sale
       obj.is_sale = document.getElementById('modalIsSale').checked;
+      // clear previous errors
+      const errBox = document.getElementById('modalErrors'); if(errBox){ errBox.style.display='none'; errBox.innerHTML=''; }
       // fire event so page can listen and perform AJAX
       document.dispatchEvent(new CustomEvent('productModalSubmit', { detail: obj }));
-      hideModal();
+      // DO NOT hide modal here; handler will hide on success
     });
 
     // expose helpers
     window.showProductModal = showModal;
     window.hideProductModal = hideModal;
+    window.renderModalErrors = function(errors){
+      const errBox = document.getElementById('modalErrors');
+      if(!errBox) return;
+      errBox.innerHTML = '';
+      if(!errors) { errBox.style.display='none'; return; }
+      // errors expected as { field: [msg, ...], ... }
+      for(const [k, msgs] of Object.entries(errors)){
+        const p = document.createElement('p');
+        p.innerHTML = `<strong>${k}</strong>: ${Array.isArray(msgs) ? msgs.join('<br>') : msgs}`;
+        errBox.appendChild(p);
+      }
+      errBox.style.display = 'block';
+    };
+    // allow caller to set saving state
+    window.setModalSaving = function(saving){
+      const btn = document.getElementById('modalSubmit');
+      if(!btn) return;
+      btn.disabled = !!saving;
+      btn.textContent = saving ? 'Saving...' : 'Save';
+      if(saving) btn.classList.add('opacity-70'); else btn.classList.remove('opacity-70');
+    };
   })();
 </script>
