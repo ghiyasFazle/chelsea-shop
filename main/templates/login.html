@@ -51,11 +51,9 @@
             if(res.ok){
               const j = await res.json();
               try{ showToast && showToast('Logged in', 'success'); }catch(e){}
-              // give toast a moment to appear before redirecting
               if(j.redirect){ setTimeout(()=> window.location.href = j.redirect, 600); }
             } else {
               const j = await res.json().catch(()=>({error: 'Unknown error'}));
-              // display errors
               const html = j.non_field_errors ? ('<p>'+ j.non_field_errors.join('<br>') +'</p>') : (j.error? '<p>'+j.error+'</p>' : '');
               errBox.innerHTML = html || '<p>Login failed</p>';
               errBox.style.display = 'block';

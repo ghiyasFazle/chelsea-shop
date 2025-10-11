@@ -1,4 +1,4 @@
-<!-- Simple confirm modal -->
+<!-- confirmation modal -->
 <div id="confirmModal" class="hidden fixed inset-0 z-50 w-full flex items-center justify-center" style="background: rgba(0,0,0,0.5);">
   <div class="product-card w-11/12 sm:w-3/4 md:w-1/2 lg:w-1/3">
     <div class="flex items-start justify-between mb-4">
@@ -49,10 +49,9 @@
       if(currentResolve){ currentResolve(true); currentResolve = null; }
     });
 
-    // expose helpers
+  
     window.showConfirmModal = showConfirm;
     window.hideConfirmModal = hide;
-    // allow caller to set loading state on confirm modal
     window.setConfirmLoading = function(loading){
       if(!okBtn) return;
       okBtn.disabled = !!loading;

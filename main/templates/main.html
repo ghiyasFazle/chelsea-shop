@@ -30,9 +30,8 @@
 {% include 'modal.html' %}
 {% include 'confirm_modal.html' %}
 
-<!-- AJAX state containers: all start hidden -->
+
 <style>
-  /* fallback hidden class if not provided by CSS framework */
   .hidden { display: none !important; }
   .state-container { padding: 1rem; text-align: center; }
 </style>
@@ -55,11 +54,9 @@
 
 <div id="grid" class="hidden">
   <div id="grid-inner" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 p-6">
-    <!-- product cards will be injected here by JS -->
   </div>
 </div>
 
-<!-- Initial server-side rendered fallback (for non-JS clients). We still render product_list into a hidden template node that JS can use as a fallback if desired. -->
 <template id="ssr-products">
 {% if product_list %}
   {% for product in product_list %}
@@ -96,26 +93,21 @@
           return;
         }
 
-        // Number formatter for price
         const fmt = new Intl.NumberFormat('id-ID');
-
-        // Clear grid and render items following product_card.html classes
         gridInner.innerHTML = '';
         data.forEach(item => {
           try {
-            // support Django serializers (item.fields + item.pk)
-            // or plain object shapes returned by other APIs
+
             let obj, pk;
             if(item && typeof item === 'object' && 'fields' in item && 'pk' in item){
               obj = item.fields;
               pk = item.pk;
             } else if(item && typeof item === 'object' && ('pk' in item || 'id' in item) && ('name' in item || 'title' in item)){
-              // DRF-like or custom shape
               obj = item;
               pk = item.pk ?? item.id;
             } else {
               console.warn('Skipping unexpected item format', item);
-              return; // skip malformed item
+              return;
             }
 
             const card = document.createElement('div');
@@ -163,7 +155,7 @@
       }
     }
 
-    // helpers
+  
     function escapeHtml(s){
       return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     }
@@ -180,38 +172,33 @@
 
     retryBtn && retryBtn.addEventListener('click', fetchProducts);
 
-    // run on load
+
     document.addEventListener('DOMContentLoaded', function(){
-      // If the template has server-side rendered cards, use them as fast fallback before fetching
       const ssr = document.getElementById('ssr-products');
       if(ssr && ssr.content && ssr.content.children.length>0){
         gridInner.append(...Array.from(ssr.content.children));
         show(grid);
       }
-      // wire filter buttons
       const btnAll = document.getElementById('filter-all');
       const btnMy = document.getElementById('filter-my');
       btnAll && btnAll.addEventListener('click', function(){ fetchProducts({filter: 'all'}); });
       btnMy && btnMy.addEventListener('click', function(){ fetchProducts({filter: 'my'}); });
-
-      // then fetch fresh data (default all)
       fetchProducts({filter: 'all'});
 
-  // listen for global refresh event from navbar
+
   document.addEventListener('refreshProducts', function(){ fetchProducts({filter: 'all'}); });
 
-      // listen for global openProductModal event (navbar)
       document.addEventListener('openProductModal', function(){
         window.showProductModal && window.showProductModal('create', null);
       });
 
-      // wire create button from partial to open modal in create mode
+      
       const addBtn = document.getElementById('openCreateModal') || document.getElementById('add-product-btn');
       addBtn && addBtn.addEventListener('click', function(){
         window.showProductModal && window.showProductModal('create', null);
       });
 
-      // delegated handler for edit buttons rendered in product cards
+     
       document.addEventListener('click', async function(e){
         const btn = e.target.closest && e.target.closest('.edit-trigger');
         if(!btn) return;
@@ -221,7 +208,7 @@
           const res = await fetch(`/json/${encodeURIComponent(id)}/`, { headers: { 'Accept': 'application/json' } });
           if(!res.ok) throw new Error('Failed to fetch product');
           const data = await res.json();
-          // show modal in edit mode with fetched data
+          
           window.showProductModal && window.showProductModal('edit', data);
         }catch(err){
           console.error(err);
@@ -229,7 +216,6 @@
         }
       });
 
-      // delegated handler for delete buttons
       document.addEventListener('click', async function(e){
         const dbtn = e.target.closest && e.target.closest('.delete-trigger');
         if(!dbtn) return;
@@ -240,13 +226,13 @@
           const confirmed = await window.showConfirmModal('Hapus produk ini? Tindakan ini tidak bisa dibatalkan.');
           if(!confirmed) return;
 
-          // CSRF helper
+
           function getCookie(name){
             const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
             return v ? v.pop() : '';
           }
 
-          // show loading state on confirm modal
+
           window.setConfirmLoading && window.setConfirmLoading(true);
           try{
             const res = await fetch(`/product/${encodeURIComponent(id)}/delete`, {
@@ -260,7 +246,7 @@
 
             if(!res.ok) throw new Error('Delete failed');
 
-            // refresh list
+
             fetchProducts({filter: 'all'});
           }finally{
             window.setConfirmLoading && window.setConfirmLoading(false);
@@ -271,23 +257,19 @@
         }
       });
 
-      // Listen for modal submit custom event (dispatched by modal.js in modal.html)
+
       document.addEventListener('productModalSubmit', async function(ev){
         const payload = ev.detail || {};
 
-        // helper: get CSRF token from cookies
         function getCookie(name){
           const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
           return v ? v.pop() : '';
         }
 
         const csrftoken = getCookie('csrftoken');
-
-        // determine create vs update
         const isEdit = !!payload.id;
         const url = isEdit ? `/product/${payload.id}/edit/` : '{% url "main:create_product" %}';
 
-        // build form body as URLSearchParams to match typical Django form handling
         const body = new URLSearchParams();
         if(payload.name) body.append('name', payload.name);
         if(payload.description) body.append('description', payload.description);
@@ -295,9 +277,8 @@
         if(payload.stock !== undefined) body.append('stock', payload.stock);
         if(payload.category) body.append('category', payload.category);
         if(payload.thumbnail) body.append('thumbnail', payload.thumbnail);
-        // checkbox
-        if(payload.is_sale) body.append('is_sale', 'on');
 
+        if(payload.is_sale) body.append('is_sale', 'on');
         try{
           window.setModalSaving && window.setModalSaving(true);
           const res = await fetch(url, {
@@ -314,15 +295,13 @@
           const json = await res.json().catch(()=>null);
 
           if(!res.ok){
-            // If validation errors returned (status 400), render them inside modal
             if(res.status === 400 && json && json.errors){
               window.renderModalErrors && window.renderModalErrors(json.errors);
-              return; // keep modal open
+              return;
             }
             throw new Error('Server returned ' + res.status);
           }
 
-          // success: hide modal and refresh product list
           window.hideProductModal && window.hideProductModal();
           try{
             if(isEdit){
@@ -332,7 +311,7 @@
             } else {
               showToast && showToast('Product saved', 'success');
             }
-          }catch(e){ /* ignore toast errors */ }
+          }catch(e){}
           fetchProducts({filter: 'all'});
         }catch(err){
           console.error('Error submitting product modal', err);
